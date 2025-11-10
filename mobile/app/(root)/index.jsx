@@ -11,7 +11,7 @@ export default function Page() {
   useEffect(() => {
     loadData();
   }, [loadData]);
-  console.log("userId",user.id);
+  console.log("userId", user.id);
   console.log(transactions);
   console.log(summary);
 
@@ -19,6 +19,9 @@ export default function Page() {
     <View>
       <SignedIn>
         <Text>Hello {user?.emailAddresses[0].emailAddress}</Text>
+        <Text>Income: {summary.income}</Text>
+        <Text>Expenses: {summary.expenses}</Text>
+        <Text>Balance: {summary.balance}</Text>
         <SignOutButton />
       </SignedIn>
       <SignedOut>
