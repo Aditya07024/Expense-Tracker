@@ -27,15 +27,15 @@ export async function getTransactionsByUserId(req, res) {
 // ✅ Create a new transaction
 export async function createTransaction(req, res) {
   try {
-    const { title, amount, category, user_id } = req.body;
+    const { title, amount, source, category, user_id } = req.body;
 
-    if (!title || !user_id || !category || amount === undefined) {
+    if (!title || !user_id || !source || !category || amount === undefined) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     const transaction = await sql`
-      INSERT INTO transactions (user_id, title, amount, category)
-      VALUES (${user_id}, ${title}, ${amount}, ${category})
+      INSERT INTO transactions (user_id, title, amount, source, category)
+      VALUES (${user_id}, ${title}, ${amount}, ${source}, ${category})
       RETURNING *
     `;
 
@@ -87,9 +87,9 @@ export async function getSummaryByUserId(req, res) {
 
     const [balanceResult] = await sql`
   SELECT COALESCE(SUM(
-    CASE 
-      WHEN category = 'income' THEN CAST(amount AS NUMERIC)
-      WHEN category = 'expense' THEN -CAST(amount AS NUMERIC)
+    CASE
+      WHEN source = 'income' THEN CAST(amount AS NUMERIC)
+      WHEN source = 'expense' THEN -CAST(amount AS NUMERIC)
       ELSE 0
     END
   ), 0) AS balance
@@ -97,16 +97,16 @@ export async function getSummaryByUserId(req, res) {
   WHERE user_id = ${userId}
 `;
 
-const [incomeResult] = await sql`
+    const [incomeResult] = await sql`
   SELECT COALESCE(SUM(CAST(amount AS NUMERIC)), 0) AS income
   FROM transactions
-  WHERE user_id = ${userId} AND category = 'income'
+  WHERE user_id = ${userId} AND source = 'income'
 `;
 
-const [expensesResult] = await sql`
+    const [expensesResult] = await sql`
   SELECT COALESCE(SUM(CAST(amount AS NUMERIC)), 0) AS expenses
   FROM transactions
-  WHERE user_id = ${userId} AND category = 'expense'
+  WHERE user_id = ${userId} AND source = 'expense'
 `;
 
     res.status(200).json({
